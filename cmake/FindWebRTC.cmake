@@ -152,7 +152,7 @@ if(WEBRTC_INCLUDE_DIR)
     add_definitions(-DWEBRTC_POSIX)
 
     # For ABI compatability between precompiled WebRTC libraries using clang and new GCC versions
-    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+    # add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
     set(WEBRTC_DEPENDENCIES -lrt -lX11 -lGLU) # -lGL
 
     # Enable libstdc++ debugging if you build WebRTC with `enable_iterator_debugging=true`
@@ -164,6 +164,8 @@ if(WEBRTC_INCLUDE_DIR)
     list(APPEND WEBRTC_INCLUDE_DIRS ${WEBRTC_INCLUDE_DIR} ${WEBRTC_INCLUDE_DIR}/third_party/boringssl/src/include)
   endif()
 
+
+  set(WEBRTC_LIBRARY_RELEASE ${WEBRTC_LIBRARIES_RELEASE})
   include(${CMAKE_ROOT}/Modules/SelectLibraryConfigurations.cmake)
   select_library_configurations(WEBRTC)
   # message("WEBRTC_LIBRARIES: ${WEBRTC_LIBRARIES}")
