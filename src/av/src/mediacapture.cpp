@@ -88,8 +88,13 @@ void MediaCapture::openStream(const std::string& filename, AVInputFormat* inputF
     if (_formatCtx)
         throw std::runtime_error("Capture has already been initialized");
 
-    if (avformat_open_input(&_formatCtx, filename.c_str(), inputFormat, formatParams) < 0)
-        throw std::runtime_error("Cannot open the media source: " + filename);
+    int err = avformat_open_input(&_formatCtx, filename.c_str(), inputFormat, formatParams);
+    if (err < 0)
+    {
+        char buf[256];
+        av_strerror(err, buf, sizeof(buf));
+        throw std::runtime_error("Cannot open the media source: " + filename + " " + buf + " " + util::itostr(err));
+    }
 
     // _formatCtx->max_analyze_duration = 0;
     if (avformat_find_stream_info(_formatCtx, nullptr) < 0)
@@ -106,15 +111,15 @@ void MediaCapture::openStream(const std::string& filename, AVInputFormat* inputF
             _video->create();
             _video->open();
         }
-        else if (!_audio && codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-            _audio = new AudioDecoder(stream);
-            _audio->emitter.attach(packetSlot(this, &MediaCapture::emit));
-            _audio->create();
-            _audio->open();
-        }
+//        else if (!_audio && codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+//            _audio = new AudioDecoder(stream);
+//            _audio->emitter.attach(packetSlot(this, &MediaCapture::emit));
+//            _audio->create();
+//            _audio->open();
+//        }
     }
 
-    if (!_video && !_audio)
+    if (!_video /*&& !_audio*/)
         throw std::runtime_error("Cannot find a valid media stream: " + filename);
 }
 
