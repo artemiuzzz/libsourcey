@@ -12,16 +12,16 @@
 #  WEBRTC_DEPENDENCIES
 #
 
-unset(WEBRTC_INCLUDE_DIR)
-unset(WEBRTC_INCLUDE_DIR CACHE)
-unset(WEBRTC_LIBRARY)
-unset(WEBRTC_LIBRARY CACHE)
-unset(WEBRTC_LIBRARIES)
-unset(WEBRTC_LIBRARIES CACHE)
-unset(WEBRTC_LIBRARIES_DEBUG)
-unset(WEBRTC_LIBRARIES_DEBUG CACHE)
-unset(WEBRTC_LIBRARIES_RELEASE)
-unset(WEBRTC_LIBRARIES_RELEASE CACHE)
+# unset(WEBRTC_INCLUDE_DIR)
+# unset(WEBRTC_INCLUDE_DIR CACHE)
+# unset(WEBRTC_LIBRARY)
+# unset(WEBRTC_LIBRARY CACHE)
+# unset(WEBRTC_LIBRARIES)
+# unset(WEBRTC_LIBRARIES CACHE)
+# unset(WEBRTC_LIBRARIES_DEBUG)
+# unset(WEBRTC_LIBRARIES_DEBUG CACHE)
+# unset(WEBRTC_LIBRARIES_RELEASE)
+# unset(WEBRTC_LIBRARIES_RELEASE CACHE)
 
 # Set required variables
 set(WEBRTC_ROOT_DIR "" CACHE STRING "Where is the WebRTC root directory located?")
@@ -90,7 +90,10 @@ if(WEBRTC_INCLUDE_DIR)
 
   # Otherwise fallback to library objects (slower and unreliable)
   if(NOT WEBRTC_LIBRARIES)
-    set(WEBRTC_LIBRARIES "")
+    #unset(WEBRTC_LIBRARY CACHE)
+    #unset(WEBRTC_LIBRARIES CACHE)
+    #set(WEBRTC_LIBRARIES "")
+    
     if(MSVC)
       set(lib_suffix "lib")
     else()
@@ -115,7 +118,6 @@ if(WEBRTC_INCLUDE_DIR)
         endif()
         # endif()
       endforeach()
-      # message(FATAL_ERROR "DONE: ${WEBRTC_LIBRARIES_DEBUG}")
       foreach(lib ${WEBRTC_LIBRARIES_DEBUG})
         if(WIN32 AND (CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE))
           list(APPEND WEBRTC_LIBRARIES "debug" ${lib})
@@ -164,20 +166,13 @@ if(WEBRTC_INCLUDE_DIR)
     list(APPEND WEBRTC_INCLUDE_DIRS ${WEBRTC_INCLUDE_DIR} ${WEBRTC_INCLUDE_DIR}/third_party/boringssl/src/include)
   endif()
 
+  # include(${CMAKE_ROOT}/Modules/SelectLibraryConfigurations.cmake)
+  # select_library_configurations(WEBRTC)
 
-  set(WEBRTC_LIBRARY_RELEASE ${WEBRTC_LIBRARIES_RELEASE})
-  include(${CMAKE_ROOT}/Modules/SelectLibraryConfigurations.cmake)
-  select_library_configurations(WEBRTC)
+  # message("WEBRTC_LIBRARIES_DEBUG: ${WEBRTC_LIBRARIES_DEBUG}")
+  # message("WEBRTC_LIBRARIES_RELEASE: ${WEBRTC_LIBRARIES_RELEASE}")
   # message("WEBRTC_LIBRARIES: ${WEBRTC_LIBRARIES}")
 endif()
-
-# HACK: WEBRTC_LIBRARIES and WEBRTC_DEPENDENCIES not propagating to parent scope
-# while the WEBRTC_DEBUG_LIBRARY and WEBRTC_RELEASE_LIBRARY vars are.
-# Setting PARENT_SCOPE fixes this solves theis issue for now.
-set(WEBRTC_LIBRARIES ${WEBRTC_LIBRARIES} CACHE INTERNAL "")
-set(WEBRTC_DEPENDENCIES ${WEBRTC_DEPENDENCIES} CACHE INTERNAL "")
-set(WEBRTC_INCLUDE_DIRS ${WEBRTC_INCLUDE_DIRS} CACHE INTERNAL "")
-set(WEBRTC_FOUND ${WEBRTC_FOUND} CACHE INTERNAL "")
 
 # ----------------------------------------------------------------------
 # Display status
@@ -187,7 +182,15 @@ find_package_handle_standard_args(WEBRTC DEFAULT_MSG WEBRTC_LIBRARIES WEBRTC_INC
 
 # print_module_variables(WEBRTC)
 
-mark_as_advanced(WEBRTC_LIBRARIES WEBRTC_LIBRARY WEBRTC_INCLUDE_DIR
+# HACK: WEBRTC_LIBRARIES and WEBRTC_DEPENDENCIES not propagating to parent scope
+# while the WEBRTC_DEBUG_LIBRARY and WEBRTC_RELEASE_LIBRARY vars are.
+# Setting PARENT_SCOPE fixes this solves theis issue for now.
+set(WEBRTC_LIBRARIES ${WEBRTC_LIBRARIES} CACHE INTERNAL "")
+set(WEBRTC_DEPENDENCIES ${WEBRTC_DEPENDENCIES} CACHE INTERNAL "")
+set(WEBRTC_INCLUDE_DIRS ${WEBRTC_INCLUDE_DIRS} CACHE INTERNAL "")
+set(WEBRTC_FOUND ${WEBRTC_FOUND} CACHE INTERNAL "")
+
+mark_as_advanced(WEBRTC_LIBRARIES WEBRTC_INCLUDE_DIR
                  WEBRTC_LIBRARIES_DEBUG WEBRTC_LIBRARIES_RELEASE
                  WEBRTC_BUILD_DIR_SUFFIX_DEBUG WEBRTC_BUILD_DIR_SUFFIX_RELEASE
                  WEBRTC_DEPENDENCIES)

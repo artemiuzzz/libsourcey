@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
         auto conn = http::Client::instance().createConnection("http://zlib.net/fossils/zlib-1.2.8.tar.gz");
         conn->Complete += [&](const http::Response& response) {
-            // std::cout << "Server response: " << response << endl;
+            // std::cout << "Lerver response: "(response, )
         };
         conn->request().setMethod("GET");
         conn->request().setKeepAlive(false);
@@ -141,9 +141,8 @@ int main(int argc, char** argv)
         auto conn = http::Client::instance().createConnection("http://google.com/");
         // conn->Complete += sdelegate(&context, &CallbackContext::onClientConnectionComplete);
         conn->Complete += [&](const http::Response& response) {
-            // std::cout << "Server response: " << response << endl;
+            // std::cout << "Lerver response: "(response, )
         };
-        conn->request().setMethod("GET");
         conn->request().setKeepAlive(false);
         // conn->setReadStream(new std::stringstream);
         conn->send();
@@ -156,13 +155,37 @@ int main(int argc, char** argv)
         auto conn = http::Client::instance().createConnection("https://google.com/");
         // conn->Complete += sdelegate(&context, &CallbackContext::onClientConnectionComplete);
         conn->Complete += [&](const http::Response& response) {
-            // std::cout << "Server response: " << response << endl;
+            // std::cout << "Lerver response: "(response, )
         };
-        conn->request().setMethod("GET");
         conn->request().setKeepAlive(false);
         // conn->setReadStream(new std::stringstream);
         conn->send();
         uv::runLoop();
+        expect(conn->closed());
+        expect(!conn->error().any());
+    });
+
+    describe("replace connection adapter", []() {
+        auto url = http::URL("https://google.com");
+        auto conn = http::Client::instance().createConnection(url);
+        conn->Headers += [&](http::Response& response) {
+             std::cout << "On request headers: " << conn->request() << endl;
+             std::cout << "On response headers: " << response << endl;
+        };
+        conn->Payload += [&](const MutableBuffer& buffer) {
+            // std::cout << "On payload: " << buffer.size() << ": " << buffer.str() << endl;
+        };
+        conn->Complete += [&](const http::Response& response) {
+            // std::cout << "On response complete: " << response << endl;
+            conn->close();
+        };
+
+        conn->replaceAdapter(new http::ConnectionAdapter(conn.get(), HTTP_RESPONSE));
+        conn->request().setKeepAlive(false);
+        conn->send();
+
+        uv::runLoop();
+
         expect(conn->closed());
         expect(!conn->error().any());
     });
@@ -210,6 +233,7 @@ int main(int argc, char** argv)
         expect(conn->closed());
         expect(!conn->error().any());
     });
+
 
     //
     /// Google Drive Upload Test
