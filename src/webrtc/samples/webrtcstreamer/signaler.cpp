@@ -55,11 +55,38 @@ void Signaler::startStreaming(const std::string& file, bool looping)
 void Signaler::sendSDP(wrtc::Peer* conn, const std::string& type,
                        const std::string& sdp)
 {
+    using namespace std;
     assert(type == "offer" || type == "answer");
+
+//    cout << sdp << endl << endl;
+//    size_t vp8start = sdp.find("a=rtpmap:96 VP8/90000");
+//    if(string::npos == vp8start)
+//        throw std::runtime_error("Not found VP8 substring");
+
+//    size_t h264start = sdp.find("a=rtpmap:100 H264/90000");
+//    if(string::npos == h264start)
+//        throw std::runtime_error("Not found H264 substring");
+
+//    string changedSdp(sdp, 0, vp8start);
+//    changedSdp.append(sdp, h264start, string::npos);
+//    cout << changedSdp << endl << endl;
+
+    string changedSdp(sdp);
+    string sVideo("m=video 9 UDP/TLS/RTP/SAVPF 96 98 100 127 125 97 99 101 124");
+    size_t videoStart = changedSdp.find(sVideo);
+    if(string::npos == videoStart)
+        throw std::runtime_error("Not found video substring");
+    size_t dist = distance(sVideo.begin(), sVideo.end());
+    changedSdp.replace(videoStart, dist,
+                       "m=video 9 UDP/TLS/RTP/SAVPF 100 127 125 97 99 101 124 96 98");
+    //LDebug("Changed sdp:", changedSdp)
+    cout << changedSdp << endl;
+
+
     smpl::Message m;
     json::value desc;
     desc[wrtc::kSessionDescriptionTypeName] = type;
-    desc[wrtc::kSessionDescriptionSdpName] = sdp;
+    desc[wrtc::kSessionDescriptionSdpName] = changedSdp;
     m[type] = desc;
 
     // smpl::Message m({ type, {
