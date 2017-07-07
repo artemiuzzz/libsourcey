@@ -4,7 +4,7 @@
 
 #include "scy/base.h"
 
-#define SERVER_HOST "localhost"
+#define SERVER_HOST "10.10.102.96"
 #define USE_SSL 0 // 1
 #if USE_SSL
 #define SERVER_PORT 443

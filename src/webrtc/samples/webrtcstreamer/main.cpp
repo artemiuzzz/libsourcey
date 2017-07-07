@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     {
         // Video source file
-        std::string sourceFile(sampleDataDir("big_buck_bunny_1080p_h264.mov"));
+        std::string sourceFile("big_buck_bunny_480p_h264.mov");
 
         // Symple signalling client options
         smpl::Client::Options options;
