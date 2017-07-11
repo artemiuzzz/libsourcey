@@ -12,8 +12,8 @@
 #include <string>
 
 #include "scy/webrtc/audiopacketmodule.h"
-#include "scy/webrtc/multiplexmediacapturer.h"
-#include "scy/webrtc/videopacketsource.h"
+#include "sample_mediacapturer.h"
+//#include "raw_videopacketsource.h"
 #include "signaler.h"
 
 #include "webrtc/api/mediastreamtrackproxy.h"

@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 //#endif
 
     // Setup WebRTC environment
-    rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE); // LS_VERBOSE, LS_INFO, LERROR
+    rtc::LogMessage::LogToDebug(rtc::LS_INFO); // LS_VERBOSE, LS_INFO, LERROR
     // rtc::LogMessage::LogTimestamps();
     // rtc::LogMessage::LogThreads();
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     {
         // Video source file
-        std::string sourceFile("big_buck_bunny_480p_h264.mov");
+        std::string sourceFile(sampleDataDir("big_buck_bunny_1080p_h264.mov"));
 
         // Symple signalling client options
         smpl::Client::Options options;

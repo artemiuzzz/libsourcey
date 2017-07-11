@@ -19,7 +19,7 @@
 #include "scy/symple/client.h"
 #include "scy/util.h"
 #include "scy/webrtc/peermanager.h"
-#include "scy/webrtc/multiplexmediacapturer.h"
+#include "sample_mediacapturer.h"
 
 #include "config.h"
 
@@ -63,7 +63,7 @@ protected:
 #else
     smpl::TCPClient _client;
 #endif
-    wrtc::MultiplexMediaCapturer _capturer;
+    wrtc::SampleMediaCapturer _capturer;
     wrtc::PeerFactoryContext _context;
 };
 
