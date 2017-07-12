@@ -29,7 +29,7 @@ public:
 
     /// Callback that fired when an
     /// is ready for processing.
-    void onVideoCaptured(scy::RawPacket& packet);
+    void onVideoCaptured(av::VideoPacket& packet);
 
     /// cricket::VideoCapturer implementation.
     virtual cricket::CaptureState Start(const cricket::VideoFormat& capture_format) override;

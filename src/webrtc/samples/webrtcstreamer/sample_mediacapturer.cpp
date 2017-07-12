@@ -63,7 +63,7 @@ RawVideoPacketSource *SampleMediaCapturer::createVideoSource()
     assert(_videoCapture->video());
     auto oparams = _videoCapture->video()->oparams;
     auto source = new RawVideoPacketSource(oparams.width, oparams.height,
-                                        oparams.fps, cricket::FOURCC_I420);
+                                           oparams.fps, cricket::FOURCC_I420);
     source->setPacketSource(&_stream.emitter); // nullified on VideoPacketSource::Stop
     return source;
 }
@@ -121,5 +121,3 @@ void SampleMediaCapturer::stop()
 
 #endif // HAVE_FFMPEG
 
-
-/// @\}

@@ -103,55 +103,68 @@ void RawVideoPacketSource::Stop()
 }
 
 
-void RawVideoPacketSource::onVideoCaptured(scy::RawPacket& packet)
+void RawVideoPacketSource::onVideoCaptured(/*scy::RawPacket&*/ av::VideoPacket& packet)
 {
-    LTrace("On video frame")
+    LTrace("On video packet")
 
-    int adapted_width;
-    int adapted_height;
-    int crop_width;
-    int crop_height;
-    int crop_x;
-    int crop_y;
-    int64_t timestamp;
-    int64_t translated_camera_time_us;
+//    int adapted_width;
+//    int adapted_height;
+//    int crop_width;
+//    int crop_height;
+//    int crop_x;
+//    int crop_y;
+//    int64_t timestamp;
+//    int64_t translated_camera_time_us;
 
-#if SCY_WebRTC_USE_DECODER_PTS
-    // Set the packet timestamp.
-    // Since the stream may not be playing from the beginning we
-    // store the first packet timestamp and subtract it from
-    // subsequent packets.
-    if (!_timestampOffset)
-        _timestampOffset = -packet.time;
-    timestamp = packet.time + _timestampOffset;
+//#if SCY_WebRTC_USE_DECODER_PTS
+//    // Set the packet timestamp.
+//    // Since the stream may not be playing from the beginning we
+//    // store the first packet timestamp and subtract it from
+//    // subsequent packets.
+//    if (!_timestampOffset)
+//        _timestampOffset = -packet.time;
+//    timestamp = packet.time + _timestampOffset;
 
-    // NOTE: Initial packet time cannot be 0 for some reason.
-    // WebRTC sets the initial packet time to 1000 so we will do the same.
-    timestamp += 1000;
-#else
-     _nextTimestamp += _captureFormat.interval;
-     timestamp = _nextTimestamp / rtc::kNumNanosecsPerMicrosec;
-#endif
+//    // NOTE: Initial packet time cannot be 0 for some reason.
+//    // WebRTC sets the initial packet time to 1000 so we will do the same.
+//    timestamp += 1000;
+//#else
+//     _nextTimestamp += _captureFormat.interval;
+//     timestamp = _nextTimestamp / rtc::kNumNanosecsPerMicrosec;
+//#endif
 
-    if (!AdaptFrame(packet.width, packet.height,
-        timestamp, //rtc::TimeNanos() / rtc::kNumNanosecsPerMicrosec,
-        rtc::TimeMicros(), //0, 0,
-        &adapted_width, &adapted_height,
-        &crop_width, &crop_height,
-        &crop_x, &crop_y, &translated_camera_time_us)) {
-        LWarn("Adapt frame failed", packet.time)
-        return;
-    }
+//    if (!AdaptFrame(packet.width, packet.height,
+//        timestamp, //rtc::TimeNanos() / rtc::kNumNanosecsPerMicrosec,
+//        rtc::TimeMicros(), //0, 0,
+//        &adapted_width, &adapted_height,
+//        &crop_width, &crop_height,
+//        &crop_x, &crop_y, &translated_camera_time_us)) {
+//        LWarn("Adapt frame failed", packet.time)
+//        return;
+//    }
 
-    rtc::scoped_refptr<webrtc::I420Buffer> buffer = webrtc::I420Buffer::Copy(
-            packet.width, packet.height,
-            packet.buffer[0], packet.linesize[0],
-            packet.buffer[1], packet.linesize[1],
-            packet.buffer[2], packet.linesize[2]);
+//    rtc::scoped_refptr<webrtc::I420Buffer> buffer = webrtc::I420Buffer::Copy(
+//            packet.width, packet.height,
+//            packet.buffer[0], packet.linesize[0],
+//            packet.buffer[1], packet.linesize[1],
+//            packet.buffer[2], packet.linesize[2]);
+
+//    OnFrame(webrtc::VideoFrame(
+//        buffer, _rotation,
+//        translated_camera_time_us), // timestamp
+//        packet.width, packet.height);
+
+    rtc::scoped_refptr<webrtc::I420Buffer> buffer = webrtc::I420Buffer::Create(
+        _captureFormat.width, _captureFormat.height);
+
+    buffer->InitializeData();
+
+    memcpy((uint8_t*)buffer->DataY() + 4, packet.data(), packet.size());
+    memset((uint8_t*)buffer->DataY(), 0, 4);
 
     OnFrame(webrtc::VideoFrame(
         buffer, _rotation,
-        translated_camera_time_us), // timestamp
+        10 /*translated_camera_time_us*/), // timestamp
         packet.width, packet.height);
 
 #if 0 // Old code pre f5297a0

@@ -146,111 +146,111 @@ void SampleMediaCapture::emit(IPacket& packet)
 }
 
 
-//void MediaCapture::run()
-//{
-//    LTrace("Running")
+void SampleMediaCapture::run()
+{
+    LTrace("Running")
 
-//    try {
-//        int res;
-//        AVPacket ipacket;
-//        av_init_packet(&ipacket);
+    try {
+        int res;
+        AVPacket ipacket;
+        av_init_packet(&ipacket);
 
-//        // Looping variables
-//        int64_t videoPtsOffset = 0;
-//        int64_t audioPtsOffset = 0;
+        // Looping variables
+        int64_t videoPtsOffset = 0;
+        int64_t audioPtsOffset = 0;
 
-//        // Realtime variables
-//        int64_t lastTimestamp = time::hrtime();
-//        int64_t frameInterval = _video ? fpsToInterval(int(_video->iparams.fps)) : 0;
+        // Realtime variables
+        int64_t lastTimestamp = time::hrtime();
+        int64_t frameInterval = _video ? fpsToInterval(int(_video->iparams.fps)) : 0;
 
-//        // Reset the stream back to the beginning when looping is enabled
-//        if (_looping) {
-//            LTrace("Looping")
-//            for (unsigned i = 0; i < _formatCtx->nb_streams; i++) {
-//                if (avformat_seek_file(_formatCtx, i, 0, 0, 0, AVSEEK_FLAG_FRAME) < 0) {
-//                    throw std::runtime_error("Cannot reset media stream");
-//                }
-//            }
-//        }
+        // Reset the stream back to the beginning when looping is enabled
+        if (_looping) {
+            LTrace("Looping")
+            for (unsigned i = 0; i < _formatCtx->nb_streams; i++) {
+                if (avformat_seek_file(_formatCtx, i, 0, 0, 0, AVSEEK_FLAG_FRAME) < 0) {
+                    throw std::runtime_error("Cannot reset media stream");
+                }
+            }
+        }
 
-//        // Read input packets until complete
-//        while ((res = av_read_frame(_formatCtx, &ipacket)) >= 0) {
-//            STrace << "Read frame: "
-//                   << "pts=" << ipacket.pts << ", "
-//                   << "dts=" << ipacket.dts << endl;
+        // Read input packets until complete
+        while ((res = av_read_frame(_formatCtx, &ipacket)) >= 0) {
+            STrace << "Read frame: "
+                   << "pts=" << ipacket.pts << ", "
+                   << "dts=" << ipacket.dts << endl;
 
-//            if (_stopping)
-//                break;
+            if (_stopping)
+                break;
 
-//            if (_video && ipacket.stream_index == _video->stream->index) {
+            if (_video && ipacket.stream_index == _video->stream->index) {
 
-//                // Set the PTS offset when looping
-//                if (_looping) {
-//                    if (ipacket.pts == 0 && _video->pts > 0)
-//                        videoPtsOffset = _video->pts;
-//                    ipacket.pts += videoPtsOffset;
-//                }
+                // Set the PTS offset when looping
+                if (_looping) {
+                    if (ipacket.pts == 0 && _video->pts > 0)
+                        videoPtsOffset = _video->pts;
+                    ipacket.pts += videoPtsOffset;
+                }
 
-//                // Decode and emit
-//                if (_video->decode(ipacket)) {
-//                    STrace << "Decoded video: "
+                // Decode and emit
+                if (_video->decode(ipacket)) {
+                    STrace << "Decoded video: " << endl;
 //                           << "time=" << _video->time << ", "
 //                           << "pts=" << _video->pts << endl;
-//                }
+                }
 
-//                // Pause the input stream in realtime mode if the
-//                // decoder is working too fast
-//                if (_realtime) {
-//                    auto nsdelay = frameInterval - (time::hrtime() - lastTimestamp);
-//                    // LDebug("Sleep delay: ", nsdelay, ", ", (time::hrtime() - lastTimestamp), ", ", frameInterval)
-//                    std::this_thread::sleep_for(std::chrono::nanoseconds(nsdelay));
-//                    lastTimestamp = time::hrtime();
-//                }
-//            }
-//            else if (_audio && ipacket.stream_index == _audio->stream->index) {
+                // Pause the input stream in realtime mode if the
+                // decoder is working too fast
+                if (_realtime) {
+                    auto nsdelay = frameInterval - (time::hrtime() - lastTimestamp);
+                    // LDebug("Sleep delay: ", nsdelay, ", ", (time::hrtime() - lastTimestamp), ", ", frameInterval)
+                    std::this_thread::sleep_for(std::chrono::nanoseconds(nsdelay));
+                    lastTimestamp = time::hrtime();
+                }
+            }
+            else if (_audio && ipacket.stream_index == _audio->stream->index) {
 
-//                // Set the PTS offset when looping
-//                if (_looping) {
-//                    if (ipacket.pts == 0 && _audio->pts > 0)
-//                        videoPtsOffset = _audio->pts;
-//                    ipacket.pts += audioPtsOffset;
-//                }
+                // Set the PTS offset when looping
+                if (_looping) {
+                    if (ipacket.pts == 0 && _audio->pts > 0)
+                        videoPtsOffset = _audio->pts;
+                    ipacket.pts += audioPtsOffset;
+                }
 
-//                // Decode and emit
-//                if (_audio->decode(ipacket)) {
-//                    STrace << "Decoded Audio: "
-//                           << "time=" << _audio->time << ", "
-//                           << "pts=" << _audio->pts << endl;
-//                }
-//            }
+                // Decode and emit
+                if (_audio->decode(ipacket)) {
+                    STrace << "Decoded Audio: "
+                           << "time=" << _audio->time << ", "
+                           << "pts=" << _audio->pts << endl;
+                }
+            }
 
-//            av_packet_unref(&ipacket);
-//        }
+            av_packet_unref(&ipacket);
+        }
 
-//        // Flush remaining packets
-//        if (!_stopping && res < 0) {
-//            if (_video)
-//                _video->flush();
-//            if (_audio)
-//                _audio->flush();
-//        }
+        // Flush remaining packets
+        if (!_stopping && res < 0) {
+            if (_video)
+                _video->flush();
+            if (_audio)
+                _audio->flush();
+        }
 
-//        // End of file or error
-//        LTrace("Decoder EOF: ", res)
-//    } catch (std::exception& exc) {
-//        _error = exc.what();
-//        LError("Decoder Error: ", _error)
-//    } catch (...) {
-//        _error = "Unknown Error";
-//        LError("Unknown Error")
-//    }
+        // End of file or error
+        LTrace("Decoder EOF: ", res)
+    } catch (std::exception& exc) {
+        _error = exc.what();
+        LError("Decoder Error: ", _error)
+    } catch (...) {
+        _error = "Unknown Error";
+        LError("Unknown Error")
+    }
 
-//    if (_stopping || !_looping) {
-//        LTrace("Exiting")
-//        _stopping = true;
-//        Closing.emit();
-//    }
-//}
+    if (_stopping || !_looping) {
+        LTrace("Exiting")
+        _stopping = true;
+        Closing.emit();
+    }
+}
 
 
 //void MediaCapture::getEncoderFormat(Format& format)

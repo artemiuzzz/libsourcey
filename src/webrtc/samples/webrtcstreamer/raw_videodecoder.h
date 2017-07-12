@@ -22,7 +22,7 @@ struct RawVideoDecoder : public VideoDecoder
 //    virtual void open() override;
 //    virtual void close() override;
 
-    /// Returns true an output packet was was decoded, false otherwise.
+    /// Fake decoding.
     virtual bool decode(AVPacket& ipacket);
 
 //    /// Flushes buffered frames.

@@ -63,36 +63,36 @@ RawVideoDecoder::RawVideoDecoder(AVStream* stream)
 //}
 
 
-inline void emitPacket(RawVideoDecoder* dec, AVFrame* frame)
-{
-    frame->pts = av_frame_get_best_effort_timestamp(frame);
+//inline void emitPacket(RawVideoDecoder* dec, AVFrame* frame)
+//{
+//    frame->pts = av_frame_get_best_effort_timestamp(frame);
 
-    // Set the decoder time in microseconds
-    // This value represents the number of microseconds
-    // that have elapsed since the brginning of the stream.
-    dec->time = dec->frame->pts > 0 ? static_cast<int64_t>(dec->frame->pkt_pts *
-                av_q2d(dec->stream->time_base) * AV_TIME_BASE) : 0;
+//    // Set the decoder time in microseconds
+//    // This value represents the number of microseconds
+//    // that have elapsed since the brginning of the stream.
+//    dec->time = dec->frame->pts > 0 ? static_cast<int64_t>(dec->frame->pkt_pts *
+//                av_q2d(dec->stream->time_base) * AV_TIME_BASE) : 0;
 
-    // Set the decoder pts in stream time base
-    dec->pts = frame->pts;
+//    // Set the decoder pts in stream time base
+//    dec->pts = frame->pts;
 
-    // Set the decoder seconds since stream start
-    dec->seconds = (frame->pkt_dts - dec->stream->start_time) * av_q2d(dec->stream->time_base);
+//    // Set the decoder seconds since stream start
+//    dec->seconds = (frame->pkt_dts - dec->stream->start_time) * av_q2d(dec->stream->time_base);
 
-    STrace << "Decoded video frame:"
-        << "\n\tFrame DTS: " << frame->pkt_dts
-        << "\n\tFrame PTS: " << frame->pts
-        << "\n\tTimestamp: " << dec->time
-        << "\n\tSeconds: " << dec->seconds
-        << endl;
+//    STrace << "Decoded video frame:"
+//        << "\n\tFrame DTS: " << frame->pkt_dts
+//        << "\n\tFrame PTS: " << frame->pts
+//        << "\n\tTimestamp: " << dec->time
+//        << "\n\tSeconds: " << dec->seconds
+//        << endl;
 
-    PlanarVideoPacket video(frame->data, frame->linesize, dec->oparams.pixelFmt,
-                            frame->width, frame->height, dec->time);
-    video.source = frame;
-    video.opaque = dec;
+//    PlanarVideoPacket video(frame->data, frame->linesize, dec->oparams.pixelFmt,
+//                            frame->width, frame->height, dec->time);
+//    video.source = frame;
+//    video.opaque = dec;
 
-    dec->emitter.emit(video);
-}
+//    dec->emitter.emit(video);
+//}
 
 
 //bool RawVideoDecoder::decode(uint8_t* data, int size)
@@ -108,15 +108,33 @@ inline void emitPacket(RawVideoDecoder* dec, AVFrame* frame)
 
 bool RawVideoDecoder::decode(AVPacket& ipacket)
 {
+    // fake decoding
+
     assert(ctx);
     assert(codec);
     assert(frame);
     assert(!stream || ipacket.stream_index == stream->index);
 
-    VideoPacket video(ipacket.data, ipacket.size, 1920, 1080, ipacket.dts);
-    emitter.emit(video);
+    if (ipacket.size > 0 && ipacket.data) {
 
-    return true;
+        uint8_t* frame_buffer = new uint8_t[ipacket.size + 4];
+
+        memset(frame_buffer, 0x00, ipacket.size + 4);
+        memcpy(frame_buffer, ipacket.data, ipacket.size);
+        frame_buffer[ipacket.size] = 0x00;
+        frame_buffer[ipacket.size+1] = 0x00;
+        frame_buffer[ipacket.size+2] = 0x00;
+        frame_buffer[ipacket.size+3] = 0x01;
+
+        av::VideoPacket video(frame_buffer, ipacket.size + 4);
+        emitter.emit(video);
+
+        delete frame_buffer;
+    }
+    else
+    {
+        return false;
+    }
 
 //    int ret, frameDecoded = 0;
 //    while (ipacket.size > 0) {
@@ -149,6 +167,7 @@ bool RawVideoDecoder::decode(AVPacket& ipacket)
 //    }
 //    assert(ipacket.size == 0);
 //    return !!frameDecoded;
+    return true;
 }
 
 

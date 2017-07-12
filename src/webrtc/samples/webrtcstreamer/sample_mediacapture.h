@@ -38,7 +38,7 @@ public:
 //    virtual void start() override;
 //    virtual void stop() override;
 
-//    virtual void run() override;
+    virtual void run() override;
 
 //    virtual void getEncoderFormat(Format& format);
 //    virtual void getEncoderAudioCodec(AudioCodec& params);
